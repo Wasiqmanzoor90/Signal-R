@@ -1,5 +1,6 @@
 // Import required namespaces
 using Microsoft.EntityFrameworkCore;
+using MyApiProject.Inerface;
 using MyApiProject.Service;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,9 +10,14 @@ builder.Services.AddControllers(); // Add this for controller support
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
 builder.Services.AddDbContext<SqlDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
+
+//json token servoce
+// Program.cs - This runs ONCE when app starts
+builder.Services.AddScoped<IJsonToken, JsonTokenService>();
 
 var app = builder.Build();
 

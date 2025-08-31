@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyApiProject.Service;
 
@@ -11,9 +12,11 @@ using MyApiProject.Service;
 namespace MyApiProject.Migrations
 {
     [DbContext(typeof(SqlDbContext))]
-    partial class SqlDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250831093434_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

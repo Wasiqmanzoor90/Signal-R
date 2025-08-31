@@ -12,4 +12,8 @@ dotnet add package JWT
 dotnet ef migrations add InitialCreate
 dotnet ef database update
 
+dotnet add package Microsoft.AspNetCore.SignalR
+dotnet add package Microsoft.AspNetCore.SignalR.Core
+dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
+
 
