@@ -8,19 +8,21 @@ using MyApiProject.Service;
 
 namespace MyApiProject.Controller
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class UserController(SqlDbContext dbContext, IJsonToken tokenService) : ControllerBase
     {
         private readonly SqlDbContext _dbcontext = dbContext;
         private readonly IJsonToken _tokenService = tokenService;
 
-      [HttpPost("register")]
-public async Task<IActionResult> Register([FromBody] User user)
-{
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] User user)
+        {
 
-if (string.IsNullOrWhiteSpace(user.Email))
-    return BadRequest("Email is required");
-if (string.IsNullOrWhiteSpace(user.Password))
-    return BadRequest("Password is required");
+            if (string.IsNullOrWhiteSpace(user.Email))
+                return BadRequest("Email is required");
+            if (string.IsNullOrWhiteSpace(user.Password))
+                return BadRequest("Password is required");
 
 
             try
@@ -50,7 +52,7 @@ if (string.IsNullOrWhiteSpace(user.Password))
 
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody]LoginModel login)
+        public async Task<IActionResult> Login([FromBody] LoginModel login)
         {
             try
             {

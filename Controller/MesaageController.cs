@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using MyApiProject.Model;
 using MyApiProject.Service;
 using System.Security.Claims;
+using MyApiProject.Model.Dto;
 
 namespace MyApiProject.Controller
 {
@@ -96,59 +97,8 @@ namespace MyApiProject.Controller
             }
         }
 
-        [HttpGet("conversations")]
-        public async Task<IActionResult> GetUserConversations()
-        {
-            try
-            {
-                var currentUserId = GetCurrentUserId();
-                if (currentUserId == null)
-                {
-                    return Unauthorized("User not authenticated");
-                }
-
-                var conversations = await _messageService.GetUserConversationsAsync(currentUserId.Value);
-                
-                return Ok(new
-                {
-                    success = true,
-                    conversations = conversations.Select(c => new
-                    {
-                        otherUserId = c.OtherUserId,
-                        otherUserName = c.OtherUserName,
-                        lastMessage = c.LastMessage,
-                        lastMessageTime = c.LastMessageTime,
-                        unreadCount = c.UnreadCount
-                    })
-                });
-            }
-            catch (Exception )
-            {
-                return StatusCode(500, new { success = false, error = "An error occurred while retrieving conversations" });
-            }
-        }
-
-        [HttpPut("mark-read/{otherUserId}")]
-        public async Task<IActionResult> MarkMessagesAsRead(Guid otherUserId)
-        {
-            try
-            {
-                var currentUserId = GetCurrentUserId();
-                if (currentUserId == null)
-                {
-                    return Unauthorized("User not authenticated");
-                }
-
-                await _messageService.MarkMessagesAsReadAsync(currentUserId.Value, otherUserId);
-                
-                return Ok(new { success = true, message = "Messages marked as read" });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { success = false, error = "An error occurred while marking messages as read" });
-            }
-        }
-
+      
+      
         private Guid? GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -160,20 +110,5 @@ namespace MyApiProject.Controller
         }
     }
 
-    // Updated request models
-    public class CreateMessageRequest
-    {
-        public required Guid ReceiverId { get; set; }
-        public required string Content { get; set; }
-    }
-
-    // Response models for service layer
-    public class ConversationSummary
-    {
-        public Guid OtherUserId { get; set; }
-        public string OtherUserName { get; set; } = string.Empty;
-        public string? LastMessage { get; set; }
-        public DateTime? LastMessageTime { get; set; }
-        public int UnreadCount { get; set; }
-    }
+  
 }

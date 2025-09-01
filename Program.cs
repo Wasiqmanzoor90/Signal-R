@@ -1,38 +1,14 @@
-// Import required namespaces
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using MyApiProject.Inerface;
 using MyApiProject.Service;
 using MyApiProject.Model;
 using System.Text.Json.Serialization;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
+
+using MyApiProject.Extension;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-
-
-var key = Encoding.ASCII.GetBytes(builder.Configuration["JWT:SecretKey"]);
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key)
-    };
-});
-
-builder.Services.AddAuthorization();
+builder.Services.AddJwt(builder.Configuration);
 
 // Add services
 builder.Services.AddControllers()
@@ -69,6 +45,13 @@ app.UseAuthentication(); // **must be before UseAuthorization**
 app.UseAuthorization();
 // Map controllers
 app.MapControllers(); // Add this to map your controllers
+
+// 1. Add SignalR services
+builder.Services.AddSignalR();
+
+// 2. Map ChatHub endpoint
+app.MapHub<ChatHub>("/chathub");
+
 
 // Run the application
 app.Run();

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MyApiProject.Model;
+using MyApiProject.Model.Dto;
 
 
 namespace MyApiProject.Service
@@ -106,9 +107,9 @@ namespace MyApiProject.Service
                 {
                     // Count unread messages (messages sent to current user that don't have a read timestamp)
                     var unreadCount = await _dbContext.Messages
-                        .CountAsync(m => m.SenderId == conv.OtherUserId && 
-                                        m.ReceiverId == userId);
-                    // Note: You'd need to add IsRead or ReadAt property to Message model for proper unread tracking
+                        .CountAsync(m => m.SenderId == conv.OtherUserId);
+                                     
+                   
 
                     result.Add(new ConversationSummaryDto
                     {
@@ -116,7 +117,7 @@ namespace MyApiProject.Service
                         OtherUserName = otherUser.Name,
                         LastMessage = conv.LastMessage.Content,
                         LastMessageTime = conv.LastMessage.Timestamp,
-                        UnreadCount = unreadCount // This is simplified - you might want proper read tracking
+                      
                     });
                 }
             }
@@ -124,32 +125,7 @@ namespace MyApiProject.Service
             return result.OrderByDescending(c => c.LastMessageTime).ToList();
         }
 
-        public async Task<List<MessageDto>> GetUserMessagesAsync(Guid userId, int page = 1, int pageSize = 50)
-        {
-            // Get all messages sent to or from a user
-            if (page < 1) page = 1;
-            if (pageSize < 1 || pageSize > 100) pageSize = 50;
-
-            var messages = await _dbContext.Messages
-                .Where(m => m.SenderId == userId || m.ReceiverId == userId)
-                .Include(m => m.Sender)
-                .Include(m => m.Receiver)
-                .OrderByDescending(m => m.Timestamp)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(m => new MessageDto
-                {
-                    MessageId = m.MessageId,
-                    Content = m.Content,
-                    Timestamp = m.Timestamp,
-                    SenderId = m.SenderId,
-                    ReceiverId = m.ReceiverId,
-                    SenderName = m.Sender != null ? m.Sender.Name : "Unknown"
-                })
-                .ToListAsync();
-
-            return messages;
-        }
+       
 
         public async Task<bool> DeleteMessageAsync(Guid messageId, Guid userId)
         {
@@ -176,67 +152,8 @@ namespace MyApiProject.Service
                                         (m.SenderId == userId || m.ReceiverId == userId));
         }
 
-        public async Task MarkMessagesAsReadAsync(Guid currentUserId, Guid otherUserId)
-        {
-            // This is a placeholder implementation since your Message model doesn't have IsRead property
-            // You would need to add IsRead or ReadAt properties to your Message model to implement this properly
-            
-            // For now, this method exists to prevent compilation errors
-            // To implement properly, you would:
-            // 1. Add IsRead (bool) or ReadAt (DateTime?) property to Message model
-            // 2. Update unread messages from otherUserId to currentUserId
-            
-            /*
-            Example implementation if you add IsRead property:
-            
-            var unreadMessages = await _dbContext.Messages
-                .Where(m => m.SenderId == otherUserId && 
-                           m.ReceiverId == currentUserId && 
-                           !m.IsRead)
-                .ToListAsync();
-
-            foreach (var message in unreadMessages)
-            {
-                message.IsRead = true;
-            }
-
-            await _dbContext.SaveChangesAsync();
-            */
-            
-            await Task.CompletedTask; // Placeholder to make method async
-        }
-
-        private Guid? GetCurrentUserId()
-        {
-            // This would typically be injected via IHttpContextAccessor
-            // For now, this is handled in the controller
-            return null;
-        }
+     
     }
 
-    // DTOs for clean API responses
-    public class MessageDto
-    {
-        public Guid MessageId { get; set; }
-        public string Content { get; set; } = string.Empty;
-        public DateTime Timestamp { get; set; }
-        public Guid SenderId { get; set; }
-        public Guid ReceiverId { get; set; }
-        public string SenderName { get; set; } = string.Empty;
-    }
-
-    public class ConversationSummaryDto
-    {
-        public Guid OtherUserId { get; set; }
-        public string OtherUserName { get; set; } = string.Empty;
-        public string? LastMessage { get; set; }
-        public DateTime? LastMessageTime { get; set; }
-        public int UnreadCount { get; set; }
-    }
-
-    public class CreateMessageRequest
-    {
-        public required Guid ReceiverId { get; set; }
-        public required string Content { get; set; }
-    }
+   
 }
