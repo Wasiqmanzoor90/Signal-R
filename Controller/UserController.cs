@@ -13,9 +13,16 @@ namespace MyApiProject.Controller
         private readonly SqlDbContext _dbcontext = dbContext;
         private readonly IJsonToken _tokenService = tokenService;
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(User user)
-        {
+      [HttpPost("register")]
+public async Task<IActionResult> Register([FromBody] User user)
+{
+
+if (string.IsNullOrWhiteSpace(user.Email))
+    return BadRequest("Email is required");
+if (string.IsNullOrWhiteSpace(user.Password))
+    return BadRequest("Password is required");
+
+
             try
             {
                 // if(string.IsNullOrWhiteSpace(user.Name)|| string.IsNullOrWhiteSpace(user.Email))
@@ -32,7 +39,7 @@ namespace MyApiProject.Controller
 
 
             }
-              catch (Exception ex)
+            catch (Exception ex)
             {
 
                 throw new Exception("Server error: " + ex.Message);
@@ -43,7 +50,7 @@ namespace MyApiProject.Controller
 
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginModel login)
+        public async Task<IActionResult> Login([FromBody]LoginModel login)
         {
             try
             {
@@ -62,14 +69,15 @@ namespace MyApiProject.Controller
                 HttpContext.Response.Cookies.Append("token", token, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = false,
-                    SameSite = SameSiteMode.Strict,
+                    Secure = false,           // false for local HTTP
+                    SameSite = SameSiteMode.None,  // allow cross-origin (Postman)
                     Expires = DateTime.UtcNow.AddHours(10)
                 });
-              return Ok(new { message = "Login sucessfullt", token });
+                return Ok(new { message = "Login successful", token });
+
 
             }
-              catch (Exception ex)
+            catch (Exception ex)
             {
 
                 throw new Exception("Server error: " + ex.Message);

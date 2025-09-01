@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using MyApiProject.Service;
+using MyApiProject.Model;
 
 #nullable disable
 
@@ -22,47 +22,18 @@ namespace MyApiProject.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("ChatRoomUser", b =>
-                {
-                    b.Property<Guid>("ChatRoomsChatId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("UsersUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("ChatRoomsChatId", "UsersUserId");
-
-                    b.HasIndex("UsersUserId");
-
-                    b.ToTable("UserChatRooms", (string)null);
-                });
-
-            modelBuilder.Entity("MyApiProject.Model.ChatRoom", b =>
-                {
-                    b.Property<Guid>("ChatId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ChatId");
-
-                    b.ToTable("ChatRooms");
-                });
-
             modelBuilder.Entity("MyApiProject.Model.Message", b =>
                 {
                     b.Property<Guid>("MessageId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ChatRoomId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ReceiverId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("SenderId")
                         .HasColumnType("uniqueidentifier");
@@ -70,12 +41,9 @@ namespace MyApiProject.Migrations
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("MessageId");
 
-                    b.HasIndex("ChatRoomId");
+                    b.HasIndex("ReceiverId");
 
                     b.HasIndex("SenderId");
 
@@ -105,48 +73,30 @@ namespace MyApiProject.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("ChatRoomUser", b =>
-                {
-                    b.HasOne("MyApiProject.Model.ChatRoom", null)
-                        .WithMany()
-                        .HasForeignKey("ChatRoomsChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MyApiProject.Model.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("MyApiProject.Model.Message", b =>
                 {
-                    b.HasOne("MyApiProject.Model.ChatRoom", "ChatRoom")
-                        .WithMany("Messages")
-                        .HasForeignKey("ChatRoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("MyApiProject.Model.User", "Receiver")
+                        .WithMany("ReceivedMessages")
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("MyApiProject.Model.User", "Sender")
-                        .WithMany("Messages")
+                        .WithMany("SentMessages")
                         .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("ChatRoom");
+                    b.Navigation("Receiver");
 
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("MyApiProject.Model.ChatRoom", b =>
-                {
-                    b.Navigation("Messages");
-                });
-
             modelBuilder.Entity("MyApiProject.Model.User", b =>
                 {
-                    b.Navigation("Messages");
+                    b.Navigation("ReceivedMessages");
+
+                    b.Navigation("SentMessages");
                 });
 #pragma warning restore 612, 618
         }

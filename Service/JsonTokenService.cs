@@ -24,11 +24,13 @@ namespace MyApiProject.Service
                 var key = Encoding.ASCII.GetBytes(_secretkey);
                 var tokendescription = new SecurityTokenDescriptor
                 {
-                    Subject = new ClaimsIdentity([
-                        new Claim(ClaimTypes.NameIdentifier, Id.ToString()),
-                        new Claim(ClaimTypes.Name, Name),
-                        new Claim(ClaimTypes.Email, Email)
-                    ]),
+                    Subject = new ClaimsIdentity(new[]
+{
+    new Claim(ClaimTypes.NameIdentifier, Id.ToString()),
+    new Claim(ClaimTypes.Name, Name),
+    new Claim(ClaimTypes.Email, Email)
+}),
+
                     Expires = DateTime.UtcNow.AddHours(10),
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
                 };
@@ -55,19 +57,19 @@ namespace MyApiProject.Service
                     ValidateLifetime = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key)
                 };
-                 var principal = tokenHandler.ValidateToken(token, validtoken, out var validatedToken);
-            var useridclaim = principal.FindFirst(ClaimTypes.NameIdentifier);
-            if (useridclaim != null)
-            {
-                return new Guid(useridclaim.Value);
-            }
+                var principal = tokenHandler.ValidateToken(token, validtoken, out var validatedToken);
+                var useridclaim = principal.FindFirst(ClaimTypes.NameIdentifier);
+                if (useridclaim != null)
+                {
+                    return new Guid(useridclaim.Value);
+                }
 
-            else
-            {
-                throw new Exception("User ID not found in token.");
+                else
+                {
+                    throw new Exception("User ID not found in token.");
 
 
-            }
+                }
             }
             catch (Exception ex)
             {
@@ -77,8 +79,8 @@ namespace MyApiProject.Service
 
 
 
-         }
+        }
 
     }
-    
+
 }

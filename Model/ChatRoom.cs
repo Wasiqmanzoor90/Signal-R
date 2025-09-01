@@ -1,18 +1,15 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyApiProject.Model
 {
-    public class ChatRoom()
+    public class ChatRoom
     {
         [Key]
         public Guid ChatId { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        // Messages in the chatroom
-        public ICollection<Message> Messages { get; set; } = new List<Message>();
-
-        // Users in the chatroom (Many-to-Many)
+        // Navigation properties
         public ICollection<User> Users { get; set; } = new List<User>();
+        public ICollection<Message> Messages { get; set; } = new List<Message>();
     }
 }

@@ -1,16 +1,49 @@
 // Import required namespaces
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using MyApiProject.Inerface;
 using MyApiProject.Service;
+using MyApiProject.Model;
+using System.Text.Json.Serialization;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
-builder.Services.AddControllers(); // Add this for controller support
+
+
+
+var key = Encoding.ASCII.GetBytes(builder.Configuration["JWT:SecretKey"]);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+});
+
+builder.Services.AddAuthorization();
+
+// Add services
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
+builder.Services.AddScoped<MessageService>();
 builder.Services.AddDbContext<SqlDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
@@ -32,9 +65,8 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// Comment out HTTPS redirection for now
-// app.UseHttpsRedirection();
-
+app.UseAuthentication(); // **must be before UseAuthorization**
+app.UseAuthorization();
 // Map controllers
 app.MapControllers(); // Add this to map your controllers
 
