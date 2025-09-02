@@ -14,9 +14,8 @@ dotnet ef database update
 
 dotnet add package Microsoft.AspNetCore.SignalR
 dotnet add package Microsoft.AspNetCore.SignalR.Core
-dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
-dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
 dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 8.*
+dotnet add package Microsoft.AspNet.WebApi.Cors
 
 
 

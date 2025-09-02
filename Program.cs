@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 
 using MyApiProject.Extension;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddJwt(builder.Configuration);
@@ -27,6 +28,19 @@ builder.Services.AddDbContext<SqlDbContext>(options =>
 //json token servoce
 // Program.cs - This runs ONCE when app starts
 builder.Services.AddScoped<IJsonToken, JsonTokenService>();
+// 1. Add SignalR services
+builder.Services.AddSignalR();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()   // allows ALL origins
+              .AllowAnyHeader()   // allows ALL headers
+              .AllowAnyMethod();  // allows ALL HTTP methods
+    });
+});
+
 
 var app = builder.Build();
 
@@ -42,12 +56,15 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthentication(); // **must be before UseAuthorization**
+
 app.UseAuthorization();
+
+app.UseCors("AllowAll");
+
 // Map controllers
 app.MapControllers(); // Add this to map your controllers
 
-// 1. Add SignalR services
-builder.Services.AddSignalR();
+
 
 // 2. Map ChatHub endpoint
 app.MapHub<ChatHub>("/chathub");

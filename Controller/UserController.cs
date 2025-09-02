@@ -72,7 +72,7 @@ namespace MyApiProject.Controller
                 {
                     HttpOnly = true,
                     Secure = false,           // false for local HTTP
-                    SameSite = SameSiteMode.None,  // allow cross-origin (Postman)
+                    SameSite = SameSiteMode.Lax,  // allow cross-origin (Postman)
                     Expires = DateTime.UtcNow.AddHours(10)
                 });
                 return Ok(new { message = "Login successful", token });
