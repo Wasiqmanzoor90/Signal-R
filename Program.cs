@@ -3,9 +3,7 @@ using MyApiProject.Inerface;
 using MyApiProject.Service;
 using MyApiProject.Model;
 using System.Text.Json.Serialization;
-
 using MyApiProject.Extension;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,22 +23,24 @@ builder.Services.AddDbContext<SqlDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-//json token servoce
-// Program.cs - This runs ONCE when app starts
+// JSON token service
 builder.Services.AddScoped<IJsonToken, JsonTokenService>();
+
 // 1. Add SignalR services
 builder.Services.AddSignalR();
 
+// CORS configuration for SignalR
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("SignalRPolicy", policy =>
     {
-        policy.AllowAnyOrigin()   // allows ALL origins
-              .AllowAnyHeader()   // allows ALL headers
-              .AllowAnyMethod();  // allows ALL HTTP methods
+        policy.WithOrigins("http://localhost:5173", "http://localhost:3000", "https://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials() // This is crucial for SignalR
+               .WithExposedHeaders("WWW-Authenticate"); // sometimes needed
     });
 });
-
 
 var app = builder.Build();
 
@@ -55,20 +55,18 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// IMPORTANT: CORS must be before Authentication and Authorization
+app.UseCors("SignalRPolicy");
+
 app.UseAuthentication(); // **must be before UseAuthorization**
 
 app.UseAuthorization();
 
-app.UseCors("AllowAll");
-
 // Map controllers
-app.MapControllers(); // Add this to map your controllers
+app.MapControllers();
 
-
-
-// 2. Map ChatHub endpoint
+// 2. Map ChatHub endpoint with CORS
 app.MapHub<ChatHub>("/chathub");
-
 
 // Run the application
 app.Run();

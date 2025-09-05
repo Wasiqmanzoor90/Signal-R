@@ -1,4 +1,6 @@
 using System.Linq.Expressions;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyApiProject.Inerface;
@@ -86,6 +88,52 @@ namespace MyApiProject.Controller
             }
         }
 
+[HttpGet("AllUsers")]
+[Authorize] // Make sure user is authenticated
+public async Task<IActionResult> GetOnlineUsers()
+{
+    try
+    {
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId == null)
+        {
+            return Unauthorized("User not authenticated");
+        }
+
+        // Get all users except the current user
+        var users = await _dbcontext.Users
+            .Where(u => u.UserId != currentUserId.Value)
+            .Select(u => new
+            {
+                id = u.UserId,
+                name = u.Name,
+                email = u.Email,
+                avatar = u.Name.Substring(0, Math.Min(2, u.Name.Length)).ToUpper(),
+                status = "online", // You can implement actual online status tracking
+                lastSeen = "Online",
+                lastMessage = "",
+                timestamp = DateTime.Now.ToString("h:mm tt"),
+                unreadCount = 0
+            })
+            .ToListAsync();
+
+        return Ok(new { success = true, users = users });
+    }
+    catch (Exception)
+    {
+        return StatusCode(500, new { success = false, error = "An error occurred while fetching users" });
+    }
+}
+
+private Guid? GetCurrentUserId()
+{
+    var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    if (Guid.TryParse(userIdClaim, out var userId))
+    {
+        return userId;
+    }
+    return null;
+}
 
     }
 }
